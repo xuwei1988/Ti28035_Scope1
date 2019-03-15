@@ -7,6 +7,7 @@ typedef struct QFreeBlockTag {
 } QFreeBlock;
 
 
+/* Init Mempool, It's like a Array-block */
 void MemPool_init(MemPool *me, void *poolSto, Uint16 poolSize, Uint16 blockSize)
 {
     QFreeBlock *fb;
