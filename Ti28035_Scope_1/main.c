@@ -107,7 +107,6 @@ void main(void) {
     while(1) {
        ScoDevice_handle();
     }
-
 }
 
 
