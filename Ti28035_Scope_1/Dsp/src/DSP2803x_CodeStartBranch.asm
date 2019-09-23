@@ -74,6 +74,9 @@ wd_disable:
     .endif
 
 ;end wd_disable
+	.sect "AppFlag"
+AppFlag:
+	.word 0xAAAA
 
 	.end
 	

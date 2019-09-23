@@ -84,11 +84,14 @@ PAGE 0:    /* Program Memory */
    FLASHC      : origin = 0x3E8000, length = 0x002000     /* on-chip FLASH */
    FLASHB      : origin = 0x3EA000, length = 0x00BFFD     /* on-chip FLASH */
    FLASHA      : origin = 0x3F6000, length = 0x001F80     /* on-chip FLASH */
-   CSM_RSVD    : origin = 0x3F7F80, length = 0x000076     /* Part of FLASHA.  Program with all 0x0000 when CSM is in use. */
-   BEGIN       : origin = 0x3F7FF6, length = 0x000002     /* Part of FLASHA.  Used for "boot to Flash" bootloader mode. */
-   CSM_PWL_P0  : origin = 0x3F7FF8, length = 0x000008     /* Part of FLASHA.  CSM password locations in FLASHA */
+//   CSM_RSVD    : origin = 0x3F7F80, length = 0x000076     /* Part of FLASHA.  Program with all 0x0000 when CSM is in use. */
+   BEGIN       : origin = 0x3F5FFD, length = 0x000002     /* Part of FLASHA.  Used for "boot to Flash" bootloader mode. */
+   AppFlagW	   : origin = 0x3F5FFF, length = 0x000001	 /* Is App In Chip Sig  XW*/
 
-   AppFlag	   : origin = 0x3F5FFF, length = 0x000001	 /* Is App In Chip Sig  XW*/
+//   CSM_PWL_P0  : origin = 0x3F7FF8, length = 0x000008     /* Part of FLASHA.  CSM password locations in FLASHA */
+
+//	BEGIN       : origin = 0x3F7FF6, length = 0x000002     /* Part of FLASHA.  Used for "boot to Flash" bootloader mode. */
+
 
    IQTABLES    : origin = 0x3FE000, length = 0x000B50     /* IQ Math Tables in Boot ROM */
    IQTABLES2   : origin = 0x3FEB50, length = 0x00008C     /* IQ Math Tables in Boot ROM */
@@ -103,8 +106,8 @@ PAGE 1 :   /* Data Memory */
            /* Registers remain on PAGE1                                                  */
    BOOT_RSVD   : origin = 0x000000, length = 0x000050     /* Part of M0, BOOT rom will use this for stack */
    RAMM0       : origin = 0x000050, length = 0x0003B0     /* on-chip RAM block M0 */
-   RAMM1       : origin = 0x000400, length = 0x000200     /* on-chip RAM block M1 */
-   RAMM2       : origin = 0x000600, length = 0x000200     /* on-chip RAM block M1 */
+   RAMM1       : origin = 0x000400, length = 0x000100     /* on-chip RAM block M1 */
+   RAMM2       : origin = 0x000500, length = 0x000300     /* on-chip RAM block M1 */
    RAML2       : origin = 0x008800, length = 0x001800     /* on-chip RAM block L2 */
 //   RAML3       : origin = 0x009000, length = 0x001000     /* on-chip RAM block L3 */
 
@@ -125,15 +128,15 @@ SECTIONS
    .pinit              : > FLASHB,     PAGE = 0
    .text               : > FLASHB      PAGE = 0
    codestart           : > BEGIN       PAGE = 0
-   ramfuncs            : LOAD = FLASHA,
+   ramfuncs            : LOAD = FLASHB,
                          RUN = RAML0,
                          LOAD_START(_RamfuncsLoadStart),
                          LOAD_END(_RamfuncsLoadEnd),
                          RUN_START(_RamfuncsRunStart),
                          PAGE = 0
 
-   csmpasswds          : > CSM_PWL_P0  PAGE = 0
-   csm_rsvd            : > CSM_RSVD    PAGE = 0
+//   csmpasswds          : > CSM_PWL_P0  PAGE = 0
+//  csm_rsvd            : > CSM_RSVD    PAGE = 0
 
    /* Global Data Sections */
    GlobalData		  : > RAMM1		  PAGE = 1
@@ -146,11 +149,14 @@ SECTIONS
 
    /* Initalized sections go in Flash */
    /* For SDFlash to program these, they must be allocated to page 0 */
-   .econst             : > FLASHA      PAGE = 0
-   .switch             : > FLASHA      PAGE = 0
+   .econst             : > FLASHB      PAGE = 0
+   .switch             : > FLASHB      PAGE = 0
+
+
+   AppFlag			   : > AppFlagW	  PAGE = 0			/* XW */
 
    /* Allocate IQ math areas: */
-   IQmath              : > FLASHA      PAGE = 0            /* Math Code */
+   IQmath              : > FLASHB      PAGE = 0            /* Math Code */
    IQmathTables        : > IQTABLES,   PAGE = 0, TYPE = NOLOAD
 
   /* Uncomment the section below if calling the IQNexp() or IQexp()
@@ -199,5 +205,7 @@ SECTIONS
 // End of file.
 //===========================================================================
 */
+
+
 
 

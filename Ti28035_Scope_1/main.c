@@ -1,6 +1,11 @@
 #include "ScoUser.h"
 #include "ScoDevice.h"
 #include "ScoSCI.h"
+
+#include "CANBasic.h"
+#include "CANApp.h"
+#include "DeviceImfor.h"
+#include "basic.h"
 /*2019.03.15 */
 
 int sin[200] = { 0,9,19,28,38,48,57,67,76,85,95,104,113,122,131,139,
@@ -16,6 +21,51 @@ int sin[200] = { 0,9,19,28,38,48,57,67,76,85,95,104,113,122,131,139,
                  -292,-289,-286,-282,-278,-274,-269,-265,-260,-254,-249,-243,-237,-231,-224,-217,
                  -210,-203,-196,-188,-181,-173,-165,-156,-148,-139,-131,-122,-113,-104,-95,-85,
                  -76,-67,-57,-48,-38,-28,-19,-9};
+
+
+
+
+Uint16 chargerCfg[DEVICE_SET_MAXID] =
+{
+ 24500,     /* 输出电压给定 */
+ 24000,     /* 输出电压默认值 */
+ 26000,     /* 输出电压过压值 */
+ 26500,     /* 输出电流 */
+ 27000,     /* 输出电流默认值 */
+ 4000,      /* 母线电压给定 */
+ 700,       /* 最大输出功率 */
+ 28400,     /* 输出电压高点校准 */
+ 10000,     /* 输出电压低点校准 */
+ 30000,     /* 输出电流高点校准 */
+ 10000,     /* 输出电流低点校准 */
+ 28400,     /* 输出电压给定高点校准 */
+ 10000,     /* 输出电压给定低点校准 */
+ 2800,      /* AC电压高点校准 */
+ 1000,      /* AC电压低点校准 */
+ 0,
+ 0,
+ 0,
+ 0,
+ 0,
+ 0,
+ 0,
+ 0,
+ 0
+};
+
+Uint16 acVolt[3] =      {2303, 2230, 2410};
+Uint16 acCurr[3] =      {37, 36, 38};
+Uint16 acGridFreq[3] =  {500, 520, 490};
+Uint16 dcVolt[3] =      {25500, 24800, 25700};
+Uint16 dcVoltSet[3] =   {25500, 26000, 26500};
+Uint16 dcVoltClose[3] = {28400, 28000, 28200};
+Uint16 dcCurr[3] =      {27100, 26900, 27000};
+Uint16 dcCurrMax[3] =   {30000, 31000, 32000};
+Uint16 busVolt[3] =     {4000, 4100, 3900};
+Uint16 power[3] =       {700, 750, 650};
+Uint16 pfcTemp[3] =     {80, 79, 81};
+Uint16 llcTemp[3] =     {60, 59, 61};
+Uint16 transTemp[3] =   {80, 70, 90};
 
 static interrupt void cpu_timer0_isr(void){
 
@@ -55,6 +105,32 @@ static interrupt void cpu_timer0_isr(void){
         ScoUser_eventPro();
     }
 
+
+    /* CAN Task */
+    static Uint16 CANcnt = 0;
+    if(CANcnt++ >= 200) {
+        CANcnt = 0;
+        static Uint8 cnt = 0;
+        cnt++;
+        Device_updateStatus(AC_VOLT_IN, acVolt[cnt%3]);
+        Device_updateStatus(AC_CURR_IN, acCurr[cnt%3]);
+        Device_updateStatus(AC_GRID_FREQ, acGridFreq[cnt%3]);
+        Device_updateStatus(DC_VOLT_OUT, dcVolt[cnt%3]);
+        Device_updateStatus(DC_VOLT_DESIRED, dcVoltSet[cnt%3]);
+        Device_updateStatus(DC_VOLT_CLOSE_POINT, dcVoltClose[cnt%3]);
+        Device_updateStatus(DC_CURR_OUT, dcCurr[cnt%3]);
+        Device_updateStatus(DC_CURR_MAX, dcCurrMax[cnt%3]);
+        Device_updateStatus(BUS_VOLT, busVolt[cnt%3]);
+        Device_updateStatus(MAX_POWER_OUTPUT, power[cnt%3]);
+        Device_updateStatus(PFC_SIDE_TEMP, pfcTemp[cnt%3]);
+        Device_updateStatus(LLC_SIDE_TEMP, llcTemp[cnt%3]);
+        Device_updateStatus(TRANSFORM_TEMP, transTemp[cnt%3]);
+
+
+        CanApp_MainFunction();
+    }
+
+
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP1;
 }
 
@@ -86,11 +162,59 @@ void main(void) {
     ConfigCpuTimer(&CpuTimer0, 60, 100);      //100us
     CpuTimer0Regs.TCR.all = 0x4001;
 
+
+    Device_init();
+    CanBasic_init();
+
+    /* Notice: 在CanApp_init前 必须先写完deviceImfor */
+    Device_setTotalCharger(100);
+    Device_setCompleteCharger(77);
+    Device_setInterruptedCharger(23);
+    Device_setChargerHours(620);
+    Device_setChargerAH(999);
+
+    Uint8 primerVersion[6] = {'9','8','7','6','5','4'};
+    Device_setPFCSideSWVersion(primerVersion, 6);
+
+    if(Device_setConfigureValue(chargerCfg, DEVICE_SET_MAXID)) {
+        while(1){
+            ;
+        }
+    }
+
+    CanApp_init();
+
+
+    Device_updateAlarm(DEVICE_CHARGING_STATUS, 7);
+    Device_updateAlarm(DEVICE_AC_OV, 1);
+    Device_updateAlarm(DEVICE_AC_UV, 1);
+    Device_updateAlarm(DEVICE_AC_OC, 1);
+    Device_updateAlarm(DEVICE_BUS_OV, 1);
+    Device_updateAlarm(DEVICE_BUS_UV, 1);
+
+    Device_updateAlarm(DEVICE_DC_OV_ALARM, 1);
+    Device_updateAlarm(DEVICE_DC_OV_CLOSE, 1);
+    Device_updateAlarm(DEVICE_DC_UV, 1);
+    Device_updateAlarm(DEVICE_ENV_TEMP_HIGH, 1);
+    Device_updateAlarm(DEVICE_ENV_TEMP_LOW, 1);
+    Device_updateAlarm(DEVICE_PFC_TEMP_HIGH, 1);
+    Device_updateAlarm(DEVICE_DC_TEMP_HIGH, 1);
+    Device_updateAlarm(DEVICE_SCI_FAIL, 1);
+
+    Device_updateAlarm(DEVICE_PFC_SIDE_FAIL, 1);
+    Device_updateAlarm(DEVICE_PFC_ROM_FAIL, 1);
+    Device_updateAlarm(DEVICE_DC_ROM_FAIL, 1);
+    Device_updateAlarm(DEVICE_BATTERY_SOC, 7);
+
+
     PieCtrlRegs.PIEIER1.bit.INTx7 = 1;
 
     IER |= M_INT1;
     EINT;
     ERTM;
+
+
+
 
     /* step2: 输入设备基本信息 */
     ScoDevice_setName("A Phrase V");

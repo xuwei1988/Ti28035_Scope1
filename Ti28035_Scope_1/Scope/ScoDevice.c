@@ -19,7 +19,7 @@ enum{
 };
 
 
-#pragma DATA_SECTION(scoDevice, "GlobalData");
+#pragma DATA_SECTION(scoDevice, "GlobalData1");
 ScoDevice scoDevice;
 
 static void ScoDevice_disconnectJob(ScoRecvFrame *pb);
