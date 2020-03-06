@@ -1,10 +1,10 @@
 #include "DeviceImfor.h"
 
 const Uint8 ECUSerialNumber[10] = {'A', 'B','C','D','E','F','G','H','I','J'};
-const Uint8 ECUSoftWareVersion[6] = {'1', '2', '3', '4', '5', '6'};
+const Uint8 ECUSoftWareVersion[6] = {'7', '7', '7', '7', '7', '7'};
 Uint8 PrimarySideSoftwareVersion[6];
 
-const Uint8 ECUReleaseDate[8] = {'2', '0', '1', '9', '0', '9', '2', '2'};
+const Uint8 ECUReleaseDate[8] = {'2', '0', '1', '9', '1', '1', '1', '4'};
 
 
 DeviceGenImfor deviceGenImfor;

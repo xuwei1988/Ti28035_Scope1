@@ -16,23 +16,32 @@ extern BootData bootData;
 
 /* 宏定义机器运行相关模拟量 ID */
 #define AC_VOLT_IN                      0
-#define AC_CURR_IN                      1
-#define AC_GRID_FREQ                    2
+//#define AC_CURR_IN                      1
+#define TEST_DATA_1                     1
+//#define AC_GRID_FREQ                    2
+#define TEST_DATA_2                     2
 #define DC_VOLT_OUT                     3
 #define DC_VOLT_DESIRED                 4
 #define DC_VOLT_CLOSE_POINT             5
 #define DC_CURR_OUT                     6
 #define DC_CURR_MAX                     7
 #define BUS_VOLT                        8
-#define MAX_POWER_OUTPUT                9
+//#define MAX_POWER_OUTPUT                9
+#define TEST_DATA_3                     9
 #define PFC_SIDE_TEMP                   10
 #define LLC_SIDE_TEMP                   11
 #define TRANSFORM_TEMP                  12
-#define DEVICE_STATUS_MAXID             TRANSFORM_TEMP
+//#define DEVICE_STATUS_MAXID             TRANSFORM_TEMP
 
-#define RSVD0                           13
-#define RSVD1                           14
-#define RSVD2                           15
+//#define RSVD0                           13
+#define TEST_DATA_4                     13
+//#define RSVD1                           14
+#define TEST_DATA_5                     14
+//#define RSVD2                           15
+#define TEST_DATA_6                     15
+
+#define DEVICE_STATUS_MAXID             TEST_DATA_6
+
 #define DEVICE_STATE1                   16
 #define DEVICE_STATE2                   17
 #define RSVD3                           18

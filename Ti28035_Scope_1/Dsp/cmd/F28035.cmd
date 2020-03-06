@@ -106,7 +106,7 @@ PAGE 1 :   /* Data Memory */
            /* Registers remain on PAGE1                                                  */
    BOOT_RSVD   : origin = 0x000000, length = 0x000050     /* Part of M0, BOOT rom will use this for stack */
    RAMM0       : origin = 0x000050, length = 0x0003B0     /* on-chip RAM block M0 */
-   RAMM1       : origin = 0x000400, length = 0x000100     /* on-chip RAM block M1 */
+   RAMM1       : origin = 0x0004D0, length = 0x000020    /* on-chip RAM block M1 */
    RAMM2       : origin = 0x000500, length = 0x000300     /* on-chip RAM block M1 */
    RAML2       : origin = 0x008800, length = 0x001800     /* on-chip RAM block L2 */
 //   RAML3       : origin = 0x009000, length = 0x001000     /* on-chip RAM block L3 */

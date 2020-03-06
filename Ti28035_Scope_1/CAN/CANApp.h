@@ -64,5 +64,7 @@ typedef struct {
 
 void CanApp_init(void);
 void CanApp_MainFunction(void);
+Uint8 CanApp_IsRecieved(void);
+Uint8 CanApp_GetRecieveIndicator(void);
 
 #endif /* CAN_CANDSP_CANAPP_H_ */

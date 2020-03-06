@@ -34,11 +34,11 @@ Uint16 chargerCfg[DEVICE_SET_MAXID] =
  27000,     /* 输出电流默认值 */
  4000,      /* 母线电压给定 */
  700,       /* 最大输出功率 */
- 28400,     /* 输出电压高点校准 */
+ 27900,     /* 输出电压高点校准 */
  10000,     /* 输出电压低点校准 */
  30000,     /* 输出电流高点校准 */
  10000,     /* 输出电流低点校准 */
- 28400,     /* 输出电压给定高点校准 */
+ 27900,     /* 输出电压给定高点校准 */
  10000,     /* 输出电压给定低点校准 */
  2800,      /* AC电压高点校准 */
  1000,      /* AC电压低点校准 */
@@ -54,18 +54,21 @@ Uint16 chargerCfg[DEVICE_SET_MAXID] =
 };
 
 Uint16 acVolt[3] =      {2303, 2230, 2410};
-Uint16 acCurr[3] =      {37, 36, 38};
-Uint16 acGridFreq[3] =  {500, 520, 490};
+Uint16 testData1[3] =   {9, 10, 11};
+Uint16 testData2[3] =   {19, 20, 21};
 Uint16 dcVolt[3] =      {25500, 24800, 25700};
 Uint16 dcVoltSet[3] =   {25500, 26000, 26500};
 Uint16 dcVoltClose[3] = {28400, 28000, 28200};
 Uint16 dcCurr[3] =      {27100, 26900, 27000};
 Uint16 dcCurrMax[3] =   {30000, 31000, 32000};
 Uint16 busVolt[3] =     {4000, 4100, 3900};
-Uint16 power[3] =       {700, 750, 650};
+Uint16 testData3[3] =   {29, 30, 31};
 Uint16 pfcTemp[3] =     {80, 79, 81};
 Uint16 llcTemp[3] =     {60, 59, 61};
 Uint16 transTemp[3] =   {80, 70, 90};
+Uint16 testData4[3] =   {39, 40, 41};
+Uint16 testData5[3] =   {49, 50, 51};
+Uint16 testData6[3] =   {59, 60, 61};
 
 static interrupt void cpu_timer0_isr(void){
 
@@ -110,33 +113,56 @@ static interrupt void cpu_timer0_isr(void){
     static Uint16 CANcnt = 0;
     if(CANcnt++ >= 200) {
         CANcnt = 0;
-        static Uint8 cnt = 0;
+        static Uint16 cnt = 0;
         cnt++;
         Device_updateStatus(AC_VOLT_IN, acVolt[cnt%3]);
-        Device_updateStatus(AC_CURR_IN, acCurr[cnt%3]);
-        Device_updateStatus(AC_GRID_FREQ, acGridFreq[cnt%3]);
+        Device_updateStatus(TEST_DATA_1, testData1[cnt%3]);
+        Device_updateStatus(TEST_DATA_2, testData2[cnt%3]);
         Device_updateStatus(DC_VOLT_OUT, dcVolt[cnt%3]);
         Device_updateStatus(DC_VOLT_DESIRED, dcVoltSet[cnt%3]);
         Device_updateStatus(DC_VOLT_CLOSE_POINT, dcVoltClose[cnt%3]);
         Device_updateStatus(DC_CURR_OUT, dcCurr[cnt%3]);
         Device_updateStatus(DC_CURR_MAX, dcCurrMax[cnt%3]);
         Device_updateStatus(BUS_VOLT, busVolt[cnt%3]);
-        Device_updateStatus(MAX_POWER_OUTPUT, power[cnt%3]);
+        Device_updateStatus(TEST_DATA_3, testData3[cnt%3]);
         Device_updateStatus(PFC_SIDE_TEMP, pfcTemp[cnt%3]);
         Device_updateStatus(LLC_SIDE_TEMP, llcTemp[cnt%3]);
         Device_updateStatus(TRANSFORM_TEMP, transTemp[cnt%3]);
 
+        Device_updateStatus(TEST_DATA_4, testData4[cnt%3]);
+        Device_updateStatus(TEST_DATA_5, testData5[cnt%3]);
+        Device_updateStatus(TEST_DATA_6, testData6[cnt%3]);
+
+//        Device_updateStatus(AC_VOLT_IN, 1);
+//        Device_updateStatus(AC_CURR_IN, 2);
+//        Device_updateStatus(AC_GRID_FREQ, 3);
+//        Device_updateStatus(DC_VOLT_OUT, 4);
+//        Device_updateStatus(DC_VOLT_DESIRED, 5);
+//        Device_updateStatus(DC_VOLT_CLOSE_POINT, 6);
+//        Device_updateStatus(DC_CURR_OUT, 7);
+//        Device_updateStatus(DC_CURR_MAX, 8);
+//        Device_updateStatus(BUS_VOLT, 9);
+//        Device_updateStatus(MAX_POWER_OUTPUT, 10);
+//        Device_updateStatus(PFC_SIDE_TEMP, 11);
+//        Device_updateStatus(LLC_SIDE_TEMP, 12);
+//        Device_updateStatus(TRANSFORM_TEMP, 13);
+
+
+        Device_updateAlarm(DEVICE_AC_OV, (cnt+1)%2);
+        Device_updateAlarm(DEVICE_AC_UV, cnt%2);
+        Device_updateAlarm(DEVICE_AC_OC, (cnt+1)%2);
+        Device_updateAlarm(DEVICE_BUS_OV, cnt%2);
+        Device_updateAlarm(DEVICE_BUS_UV, cnt%2);
+        Device_updateAlarm(DEVICE_BATTERY_SOC, 6);
 
         CanApp_MainFunction();
     }
-
 
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP1;
 }
 
 
 void main(void) {
-
     InitSysCtrl();
     DINT;
     InitPieCtrl();
@@ -173,11 +199,12 @@ void main(void) {
     Device_setChargerHours(620);
     Device_setChargerAH(999);
 
-    Uint8 primerVersion[6] = {'9','8','7','6','5','4'};
+    Uint8 primerVersion[6] = {'7','7','7','7','7','7'};
     Device_setPFCSideSWVersion(primerVersion, 6);
 
     if(Device_setConfigureValue(chargerCfg, DEVICE_SET_MAXID)) {
         while(1){
+            //配置信息长度超范围
             ;
         }
     }
@@ -204,7 +231,7 @@ void main(void) {
     Device_updateAlarm(DEVICE_PFC_SIDE_FAIL, 1);
     Device_updateAlarm(DEVICE_PFC_ROM_FAIL, 1);
     Device_updateAlarm(DEVICE_DC_ROM_FAIL, 1);
-    Device_updateAlarm(DEVICE_BATTERY_SOC, 7);
+//    Device_updateAlarm(DEVICE_BATTERY_SOC, 7);
 
 
     PieCtrlRegs.PIEIER1.bit.INTx7 = 1;

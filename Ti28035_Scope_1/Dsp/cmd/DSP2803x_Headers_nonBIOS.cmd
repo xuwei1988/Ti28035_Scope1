@@ -96,6 +96,9 @@ MEMORY
 
    CSM_PWL     : origin = 0x3F7FF8, length = 0x000008     /* Part of FLASHA.  CSM password locations. */
 
+   ISR_VAR_RAM : origin = 0x000400, length = 0x0000C0		/* ISR variable define */
+   ISRTIME_RAM : origin = 0x0004C0, length = 0x000010
+
 }
 
 
@@ -168,6 +171,9 @@ SECTIONS
 
 /*** Device Part ID Register Structures ***/
    PartIdRegsFile    : > PARTID,   PAGE = 1
+
+   IsrVariableFile   : > ISR_VAR_RAM, PAGE = 1
+   IsrTimerFile      : > ISRTIME_RAM, PAGE = 1
 
 }
 
